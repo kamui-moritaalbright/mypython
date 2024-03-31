@@ -7,6 +7,7 @@
 #include <sstream>
 #include <ctype.h>
 #include <string>
+#include <fstream>
 using namespace std;
 //token object and its attributes
 struct token{
@@ -27,11 +28,9 @@ class parser{
 public:
     map<string, int> variables;
     vector<parse*> lines;
-    bool error = 0;
-
-    /*parser(vector<token> tokens){
-        parse_saveLines(tokens);
-    }*/
+    bool error = false;
+    bool skip = false;
+  
     void parser_construct(vector<token> tokens){
         parse_saveLines(tokens);
     }
@@ -52,11 +51,13 @@ private:
         }
 
         // Grammar for this: variable assignment (other||operand operator operand)
+
         if(tokens[index].type=="print"){
             if(tokens[index].type!="parenthesis"){
                 cout<<"missing parenthesis after print statement";
             }
         }
+      
         if (tokens[index].type=="variable"){
             if(tokens[index+1].type!="assignment"){
                 cout<<"missing assignment after variable declaration "<<tokens[index].value<<endl;
@@ -111,7 +112,13 @@ private:
     void parseEvaluate(){
         for(int i=0; i<lines.size(); i++){
             parse *head = lines[i];
-            if(head->element.type == "variable" && head){
+            if(skip==true){
+                if(head->element.type == "indent")
+                    continue;
+                else if (head->element.type == "variable")
+                    skip=false;
+            }
+            if(head->element.type == "variable"){
                 if(head->next!=nullptr){
                     if(head->next->next!=nullptr){
                         if(head->next->next->next!=nullptr){
@@ -138,9 +145,19 @@ private:
                     }
                 }else{
                     cout << "Syntax Error: Invalid Declaration" << endl;
+                } 
+            }else if(head->element.type == "keyword"){
+                if(head->element.value == "if"){
+                    if(!comparison(head->next)){
+                        skip == true;
+                    }
+                }else if (head->element.value == "else"){
+                    if(skip)
+                        skip = false;
+                    else
+                        skip = true;
                 }
-                //int RH = computeAssignment()
-                
+
             }
         }
     }
@@ -214,7 +231,56 @@ private:
         return true;
     }
 
-
+    bool comparison(parse *head){
+        string leftVal = head->element.value;
+        int left;
+        string logic = head->next->element.value;
+        string rightVal = head->next->next->element.value;
+        int right;
+        if(isnumber(leftVal))
+        {
+            left = stoi(leftVal);
+        }else{
+            auto declaredVal1 = variables.find(leftVal);
+            if(declaredVal1!=variables.end()){
+                left = declaredVal1->second;
+            }
+            else{
+                cout << "Semantic Error: Use of Undeclared Variable" << endl;
+                error = true;
+            }
+        }
+        if(isnumber(rightVal))
+        {
+            right = stoi(rightVal);
+        }else{
+            auto declaredVal2 = variables.find(rightVal);
+            if(declaredVal2!=variables.end()){
+                right = declaredVal2->second;
+            }
+            else{
+                cout << "Semantic Error: Use of Undeclared Variable" << endl;
+                error = true;
+            }
+        }
+        if(logic == "==")
+            return left == right;
+        else if (logic == "<=")
+            return left <= right;
+        else if (logic == ">=")
+            return left >= right;
+        else if (logic == "<")
+            return left < right;
+        else if (logic == ">")
+            return left > right;
+        else if (logic == "!=")
+            return left != right;
+        else{
+            error = true;
+            cout << "Invalid syntax error" << endl;
+            return false;
+        }
+    }
 
     void print(){
         cout << "Input: " ;
@@ -249,6 +315,7 @@ bool isKeyword(const string& identifier) {
     }
     return false;
 }
+
 bool isPrint(const string& identifier) {
     // List of Python keywords
     static const string keywords[] = {
@@ -263,6 +330,7 @@ bool isPrint(const string& identifier) {
     }
     return false;
 }
+
 //function to see if string is comparison, can add more if needed
 bool isComparison(const string& identifier) {
     // List of Python keywords
@@ -305,8 +373,14 @@ vector<token> lexer(string input, int line, int index) {
         characters.push_back(input[i]);
     }
     string currentWord;
+    if(characters[0]==' '){
+        token newtoken = {"indent", " ", line, 0};
+        tokens.push_back(newtoken);
+    }
+
     bool insideParenthesis = false;
     bool insideQuotes = false;
+
     for (int i = 0; i < characters.size(); i++) {
         index = i;
         if (characters[i] != ' ') {
@@ -521,13 +595,11 @@ vector<token> lexer(string input, int line, int index) {
     return tokens;
 }
 
-
 int main(){
     //testing different values
     string input1 = "a = 1";
     string input2 = "b = 2 + 3";
     string input3 = "result = a + b";
-    string input4 = "print(\"a =\",a)";
     vector<token>tokens1 =lexer(input1,1,0);
     vector<token>tokens2 =lexer(input2,1,0);
     vector<token>tokens3 =lexer(input3,1,0);
