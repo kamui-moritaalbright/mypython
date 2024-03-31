@@ -36,7 +36,7 @@ public:
     }
     void parser_evaluate(){
         parseEvaluate();
-        print();
+        //print();
     }
 
 private:
@@ -52,11 +52,11 @@ private:
 
         // Grammar for this: variable assignment (other||operand operator operand)
 
-        if(tokens[index].type=="print"){
+        /*if(tokens[index].type=="print"){
             if(tokens[index].type!="parenthesis"){
                 cout<<"missing parenthesis after print statement";
             }
-        }
+        }*/
       
         if (tokens[index].type=="variable"){
             if(tokens[index+1].type!="assignment"){
@@ -117,6 +117,9 @@ private:
                     continue;
                 else if (head->element.type == "variable")
                     skip=false;
+            }else{
+                if(head->element.type == "indent")
+                    head = head->next;
             }
             if(head->element.type == "variable"){
                 if(head->next!=nullptr){
@@ -149,7 +152,7 @@ private:
             }else if(head->element.type == "keyword"){
                 if(head->element.value == "if"){
                     if(!comparison(head->next)){
-                        skip == true;
+                        skip = true;
                     }
                 }else if (head->element.value == "else"){
                     if(skip)
@@ -158,6 +161,25 @@ private:
                         skip = true;
                 }
 
+            }else if(head->element.type == "print"){
+                parse *cu = head;
+                while(cu != nullptr){
+                    if(cu->element.type == "string")
+                        cout << cu->element.value;
+                    else if (cu->element.type == "other" || cu->element.type == "variable"){
+                        string tmp = cu->element.value;
+                        auto declaredVal = variables.find(tmp);
+                        if(declaredVal!=variables.end()){
+                            cout << declaredVal->second;
+                        }
+                        else{
+                            cout << "Semantic Error: Use of Undeclared Variable" << endl;
+                            error = true;
+                        }
+                    }
+                    cu = cu->next;
+                }
+                cout << endl;
             }
         }
     }
@@ -241,9 +263,9 @@ private:
         {
             left = stoi(leftVal);
         }else{
-            auto declaredVal1 = variables.find(leftVal);
-            if(declaredVal1!=variables.end()){
-                left = declaredVal1->second;
+            auto declaredVal = variables.find(leftVal);
+            if(declaredVal!=variables.end()){
+                left = declaredVal->second;
             }
             else{
                 cout << "Semantic Error: Use of Undeclared Variable" << endl;
@@ -254,9 +276,9 @@ private:
         {
             right = stoi(rightVal);
         }else{
-            auto declaredVal2 = variables.find(rightVal);
-            if(declaredVal2!=variables.end()){
-                right = declaredVal2->second;
+            auto declaredVal = variables.find(rightVal);
+            if(declaredVal!=variables.end()){
+                right = declaredVal->second;
             }
             else{
                 cout << "Semantic Error: Use of Undeclared Variable" << endl;
@@ -366,7 +388,7 @@ bool isOperator(const string& identifier) {
 //at the end of this function it loops through the new array
 //of tokens and figures out what they are based on their position
 //to known tokens like operators and assignments
-vector<token> lexer(string input, int line, int index) {
+vector<token> lexer(string input, int line, int index=0) {
     vector<char> characters;
     vector<token> tokens;
     for (int i = 0; i < input.length(); i++) {
@@ -596,30 +618,20 @@ vector<token> lexer(string input, int line, int index) {
 }
 
 int main(){
-    //testing different values
-    string input1 = "a = 1";
-    string input2 = "b = 2 + 3";
-    string input3 = "result = a + b";
-    vector<token>tokens1 =lexer(input1,1,0);
-    vector<token>tokens2 =lexer(input2,1,0);
-    vector<token>tokens3 =lexer(input3,1,0);
-    /*for(int i=0;i<tokens.size();i++){
-        cout<<tokens[i].type<<endl;
-    }
+    string line;
+	ifstream inFile;
+	string filename = "/Users/kamui/Documents/Spring2024/COSC4315/mypython/test.txt";
+	inFile.open(filename);
+    vector<token> tokens;
+    int lineNum = 1;
+    parser newParse;
     
-    if(!parseTokens(tokens)){
-        cout<<"this isnt valid";
-    }else{
-        cout<<"this is valid";
-    }*/
-    parser newin;
-    newin.parser_construct(tokens1);
-    newin.parser_construct(tokens2);
-    newin.parser_construct(tokens3);
-    newin.parser_evaluate();
-    vector<token>tokens4 = lexer(input4,1,0);
-    for(int i=0;i<tokens4.size();i++){
-        cout<<tokens4[i].type<<endl;
+    while(getline(inFile,line)){
+        cout << line << endl;
+        vector<token> tokens = lexer(line,lineNum);
+        newParse.parser_construct(tokens);
     }
+    newParse.parser_evaluate();
+
     return 0;
 }
