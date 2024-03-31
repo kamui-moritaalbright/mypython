@@ -32,6 +32,9 @@ public:
     bool skip = false;
   
     void parser_construct(vector<token> tokens){
+        if(tokens.empty()) {
+        return;
+    }
         parse_saveLines(tokens);
     }
     void parser_evaluate(){
@@ -43,7 +46,7 @@ private:
 
     //this goes through and verifies the expressions if theyre true or false
 //based on the grammar you establish
-    bool validSyntax(const vector<token> tokens, int index = 0) {
+bool validSyntax(const vector<token> tokens, int index = 0) {
         // Check if the index is within bounds
         if (index >= tokens.size()) {
             cout << "Error: Unexpected end of input" << endl;
@@ -51,13 +54,7 @@ private:
         }
 
         // Grammar for this: variable assignment (other||operand operator operand)
-
-        /*if(tokens[index].type=="print"){
-            if(tokens[index].type!="parenthesis"){
-                cout<<"missing parenthesis after print statement";
-            }
-        }*/
-      
+       
         if (tokens[index].type=="variable"){
             if(tokens[index+1].type!="assignment"){
                 cout<<"missing assignment after variable declaration "<<tokens[index].value<<endl;
@@ -95,7 +92,6 @@ private:
 
         // Parsing succeeded
     }
-
     void parse_saveLines(vector<token>tokens){
         if(validSyntax(tokens)){
             parse *top = new parse(tokens[0]);
@@ -164,7 +160,7 @@ private:
             }else if(head->element.type == "print"){
                 parse *cu = head;
                 while(cu != nullptr){
-                    if(cu->element.type == "string")
+                    if(cu->element.type == "String")
                         cout << cu->element.value;
                     else if (cu->element.type == "other" || cu->element.type == "variable"){
                         string tmp = cu->element.value;
@@ -395,143 +391,14 @@ vector<token> lexer(string input, int line, int index=0) {
         characters.push_back(input[i]);
     }
     string currentWord;
-    if(characters[0]==' '){
-        token newtoken = {"indent", " ", line, 0};
-        tokens.push_back(newtoken);
-    }
 
     bool insideParenthesis = false;
-    bool insideQuotes = false;
-
     for (int i = 0; i < characters.size(); i++) {
         index = i;
         if (characters[i] != ' ') {
-            if (characters[i] == '('||characters[i]==',') {
+            if (characters[i] == '(' || characters[i] == ')') {
                 // If currentWord is not empty, push it to tokens
                 if (!currentWord.empty()) {
-                    // Handle currentWord before starting a new token
-                    if (insideQuotes) {
-                        while(characters[i]!='\"'){
-                            currentWord+=characters[i];
-                            i++;
-                        }
-                        token newtoken = {"string", currentWord, line, index};
-                        tokens.push_back(newtoken);
-                        currentWord.clear();
-                        insideQuotes=false;
-                    } else {
-                        if (isKeyword(currentWord)) {
-                            token newtoken = {"keyword", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        } else if (isOperator(currentWord)) {
-                            token newtoken = {"operator", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        } else if(isComparison(currentWord)){
-                            token newtoken = {"comparison", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        } else if(isPrint(currentWord)){
-                            token newtoken = {"print",currentWord,line,index};
-                            tokens.push_back(newtoken);
-                        } else if(currentWord=="#"){
-                            break;
-                        } else if (currentWord == "=") {
-                            token newtoken = {"assignment", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        } else {
-                            token newtoken = {"other", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        }
-                    }
-                    currentWord.clear(); // Clear currentWord after processing each token
-                }
-                // Tokenize parentheses
-                string parenthesisToken(1, characters[i]);
-                if(characters[i]=='('){
-                token newtoken = {"openParenthesis", parenthesisToken, line, index};
-                tokens.push_back(newtoken);
-                }else if(characters[i]==')'){
-                token newtoken = {"closeParenthesis", parenthesisToken, line, index}; 
-                tokens.push_back(newtoken);   
-                }else if(characters[i]==','){
-                token newtoken = {"comma", ",", line, index}; 
-                tokens.push_back(newtoken);    
-                }
-                // Set insideParenthesis to true
-                insideParenthesis = true;
-            } else if (characters[i] == ')'||characters[i] == ',') {
-                // If currentWord is not empty, push it to tokens
-                if (!currentWord.empty()) {
-                    // Handle currentWord before starting a new token
-                    if (insideQuotes) {
-                        while(characters[i]!='\"'){
-                            currentWord+=characters[i];
-                            i++;
-                        }
-                        token newtoken = {"string", currentWord, line, index};
-                        tokens.push_back(newtoken);
-                        currentWord.clear();
-                    } else {
-                        if (isKeyword(currentWord)) {
-                            token newtoken = {"keyword", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        } else if (isOperator(currentWord)) {
-                            token newtoken = {"operator", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        } else if(isComparison(currentWord)){
-                            token newtoken = {"comparison", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        } else if(isPrint(currentWord)){
-                            token newtoken = {"print",currentWord,line,index};
-                            tokens.push_back(newtoken);
-                        } else if(currentWord=="#"){
-                            break;
-                        } else if (currentWord == "=") {
-                            token newtoken = {"assignment", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        } else {
-                            token newtoken = {"other", currentWord, line, index};
-                            tokens.push_back(newtoken);
-                        }
-                    }
-                    currentWord.clear(); // Clear currentWord after processing each token
-                }
-                // Tokenize parentheses
-                string parenthesisToken(1, characters[i]);
-                if(characters[i]=='('){
-                token newtoken = {"openParenthesis", parenthesisToken, line, index};
-                tokens.push_back(newtoken);
-                }else if(characters[i]==')'){
-                token newtoken = {"closeParenthesis", parenthesisToken, line, index}; 
-                tokens.push_back(newtoken);   
-                }else if(characters[i]==','){
-                token newtoken = {"comma", ",", line, index}; 
-                tokens.push_back(newtoken);    
-                }
-                // Set insideParenthesis to false
-                insideParenthesis = false;
-            } else if (characters[i] == '"') {
-                // If inside parentheses and inside quotes
-                if (insideParenthesis && insideQuotes) {
-                    token newtoken = {"string", currentWord, line, index};
-                    tokens.push_back(newtoken);
-                    currentWord.clear(); // Clear currentWord after processing each token
-                    insideQuotes = false;
-                } else {
-                    // Start of string
-                    insideQuotes = true;
-                    currentWord += characters[i];
-                }
-            } else {
-                currentWord += characters[i];
-            }
-        } else {
-            // If currentWord is not empty, push it to tokens
-            if (!currentWord.empty()) {
-                // Handle currentWord before starting a new token
-                if (insideQuotes) {
-                    token newtoken = {"string", currentWord, line, index};
-                    tokens.push_back(newtoken);
-                } else {
                     if (isKeyword(currentWord)) {
                         token newtoken = {"keyword", currentWord, line, index};
                         tokens.push_back(newtoken);
@@ -553,6 +420,57 @@ vector<token> lexer(string input, int line, int index=0) {
                         token newtoken = {"other", currentWord, line, index};
                         tokens.push_back(newtoken);
                     }
+                    currentWord.clear(); // Clear currentWord after processing each token
+                }
+                // Tokenize parentheses
+                string parenthesisToken(1, characters[i]);
+                if (parenthesisToken=="("){
+                    token newtoken = {"openParenthesis", parenthesisToken, line, index};
+                    tokens.push_back(newtoken);
+                }else if(parenthesisToken==")"){
+                    token newtoken = {"closingParenthesis", parenthesisToken, line, index};
+                    tokens.push_back(newtoken);
+                }
+            } else {
+                if(characters[i]=='"'){
+                    i++;
+                    while(characters[i]!='"'){
+                        currentWord+=characters[i];
+                        i++;
+                    }
+                    token newtoken = {"String",currentWord,line,index};
+                    tokens.push_back(newtoken);
+                    currentWord.clear();
+                    i++;
+                }
+                if(characters[i]==','){
+                    continue;
+                }
+                currentWord += characters[i];
+            }
+        } else {
+            // If currentWord is not empty, push it to tokens
+            if (!currentWord.empty()) {
+                if (isKeyword(currentWord)) {
+                    token newtoken = {"keyword", currentWord, line, index};
+                    tokens.push_back(newtoken);
+                } else if (isOperator(currentWord)) {
+                    token newtoken = {"operator", currentWord, line, index};
+                    tokens.push_back(newtoken);
+                } else if(isComparison(currentWord)){
+                    token newtoken = {"comparison", currentWord, line, index};
+                    tokens.push_back(newtoken);
+                } else if(isPrint(currentWord)){
+                    token newtoken = {"print",currentWord,line,index};
+                    tokens.push_back(newtoken);
+                } else if(currentWord=="#"){
+                    break;
+                } else if (currentWord == "=") {
+                    token newtoken = {"assignment", currentWord, line, index};
+                    tokens.push_back(newtoken);
+                } else {
+                    token newtoken = {"other", currentWord, line, index};
+                    tokens.push_back(newtoken);
                 }
                 currentWord.clear(); // Clear currentWord after processing each token
             }
@@ -561,26 +479,21 @@ vector<token> lexer(string input, int line, int index=0) {
     }
     // Process the last token if it's not empty
     if (!currentWord.empty()) {
-        if (insideQuotes) {
-            token newtoken = {"string", currentWord, line, index};
+        if (isKeyword(currentWord)) {
+            token newtoken = {"keyword", currentWord, line, index};
+            tokens.push_back(newtoken);
+        } else if (isOperator(currentWord)) {
+            token newtoken = {"operator", currentWord, line, index};
+            tokens.push_back(newtoken);
+        } else if (isComparison(currentWord)) {
+            token newtoken = {"comparison", currentWord, line, index};
+            tokens.push_back(newtoken);
+        } else if (currentWord == "=") {
+            token newtoken = {"assignment", currentWord, line, index};
             tokens.push_back(newtoken);
         } else {
-            if (isKeyword(currentWord)) {
-                token newtoken = {"keyword", currentWord, line, index};
-                tokens.push_back(newtoken);
-            } else if (isOperator(currentWord)) {
-                token newtoken = {"operator", currentWord, line, index};
-                tokens.push_back(newtoken);
-            } else if (isComparison(currentWord)) {
-                token newtoken = {"comparison", currentWord, line, index};
-                tokens.push_back(newtoken);
-            } else if (currentWord == "=") {
-                token newtoken = {"assignment", currentWord, line, index};
-                tokens.push_back(newtoken);
-            } else {
-                token newtoken = {"other", currentWord, line, index};
-                tokens.push_back(newtoken);
-            }
+            token newtoken = {"other", currentWord, line, index};
+            tokens.push_back(newtoken);
         }
         for (int i = 0; i < tokens.size(); i++) {
             if (tokens[i].type == "other") {
@@ -611,6 +524,11 @@ vector<token> lexer(string input, int line, int index=0) {
                     tokens[i].type = "operand";
                 }
             }
+            if (tokens[i].type=="other"){
+                if(tokens[i].value==")"){
+                    tokens[i].type="closingParenthesis";
+                }
+            }
 
         }
     }
@@ -620,7 +538,7 @@ vector<token> lexer(string input, int line, int index=0) {
 int main(){
     string line;
 	ifstream inFile;
-	string filename = "/Users/kamui/Documents/Spring2024/COSC4315/mypython/test.txt";
+	string filename = "/Users/zachpierce/Documents/mypython/test.txt";
 	inFile.open(filename);
     vector<token> tokens;
     int lineNum = 1;
