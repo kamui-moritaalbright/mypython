@@ -111,8 +111,9 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
             if(skip==true){
                 if(head->element.type == "indent")
                     continue;
-                else if (head->element.type == "variable")
-                    skip=false;
+                else if(head->element.value!="else")
+                    skip = false;
+                
                     
             }else{
                 if(head->element.type == "indent")
@@ -409,7 +410,18 @@ vector<token> lexer(string input, int line, int index=0) {
     for (int i = 0; i < input.length(); i++) {
         characters.push_back(input[i]);
     }
+    for(int i = input.length()-1; i >= 0; i--){
+        if(characters[i]==' ')
+            characters.pop_back();
+        else
+            break;
+    }
     string currentWord;
+
+    if(characters.size() > 1 && characters[0]==' '){
+        token newtoken = {"indent", " ", line, 0};
+        tokens.push_back(newtoken);
+    }
 
     bool insideParenthesis = false;
     for (int i = 0; i < characters.size(); i++) {
