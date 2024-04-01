@@ -39,7 +39,7 @@ public:
     }
     void parser_evaluate(){
         parseEvaluate();
-        print();
+        //print();
     }
 
 private:
@@ -113,11 +113,13 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
                     continue;
                 else if (head->element.type == "variable")
                     skip=false;
+                    
             }else{
                 if(head->element.type == "indent")
                     head = head->next;
             }
             if(head->element.type == "variable"){
+                
                 if(head->next!=nullptr){
                     if(head->next->next!=nullptr){
                         if(head->next->next->next!=nullptr){
@@ -199,6 +201,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
             // Simplified version: You need to implement operator precedence and associativity handling here
             // This is just a placeholder to illustrate the process
             if (cu->element.type == "operand") {
+                
                 string tmp = cu->element.value;
                 if(!isnumber(cu->element.value)){
                     auto declaredVal = variables.find(tmp);
@@ -214,6 +217,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
 
                 postfix += tmp + " ";
             } else { // Operator
+                
                 string tmp = cu->element.value;
                 while (!stack1.empty() && prec(tmp) <= prec(stack1.top())) {
                     postfix += stack1.top() + " ";
@@ -291,6 +295,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
                 error = true;
             }
         }
+    
         if(logic == "==")
             return left == right;
         else if (logic == "<=")
@@ -308,6 +313,10 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
             cout << "Invalid syntax error" << endl;
             return false;
         }
+        // Inside the comparison function
+
+
+        
     }
 
     void print(){
@@ -453,7 +462,7 @@ vector<token> lexer(string input, int line, int index=0) {
                     currentWord.clear();
                     i++;
                 }
-                if(characters[i]==','){
+                if(characters[i]==','||characters[i]==':'){
                     continue;
                 }
                 currentWord += characters[i];
@@ -557,6 +566,7 @@ int main(int argc, char* argv[]){
     while(getline(inFile,line)){
         vector<token> tokens = lexer(line,lineNum);
         newParse.parser_construct(tokens);
+        
     }
     newParse.parser_evaluate();
 
