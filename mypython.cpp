@@ -33,13 +33,13 @@ public:
   
     void parser_construct(vector<token> tokens){
         if(tokens.empty()) {
-        return;
-    }
+            return;
+        }
         parse_saveLines(tokens);
     }
     void parser_evaluate(){
         parseEvaluate();
-        //print();
+        print();
     }
 
 private:
@@ -161,7 +161,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
                 parse *cu = head;
                 while(cu != nullptr){
                     if(cu->element.type == "String")
-                        cout << cu->element.value;
+                        cout << cu->element.value << " ";
                     else if (cu->element.type == "other" || cu->element.type == "variable"){
                         string tmp = cu->element.value;
                         auto declaredVal = variables.find(tmp);
@@ -178,6 +178,15 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
                 cout << endl;
             }
         }
+    }
+
+    int prec(string c) {
+        if (c == "/" || c == "*")
+            return 2;
+        else if (c == "+" || c == "-")
+            return 1;
+        else
+            return -1;
     }
 
     int computeAssignment(parse* head) {
@@ -205,7 +214,8 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
 
                 postfix += tmp + " ";
             } else { // Operator
-                while (!stack1.empty()) {
+                string tmp = cu->element.value;
+                while (!stack1.empty() && prec(tmp) <= prec(stack1.top())) {
                     postfix += stack1.top() + " ";
                     stack1.pop();
                 }
@@ -305,7 +315,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
         for(int i=0; i<lines.size(); i++){
             parse *cu = lines[i];
             while(cu!=nullptr){
-                cout << cu->element.value;
+                cout << cu->element.type << " " << cu->element.value << " : ";
                 cu = cu->next;
             }
             cout << endl;
@@ -535,17 +545,16 @@ vector<token> lexer(string input, int line, int index=0) {
     return tokens;
 }
 
-int main(){
+int main(int argc, char* argv[]){
     string line;
 	ifstream inFile;
-	string filename = "/Users/zachpierce/Documents/mypython/test.txt";
+	string filename = argv[1];
 	inFile.open(filename);
     vector<token> tokens;
     int lineNum = 1;
     parser newParse;
     
     while(getline(inFile,line)){
-        cout << line << endl;
         vector<token> tokens = lexer(line,lineNum);
         newParse.parser_construct(tokens);
     }
