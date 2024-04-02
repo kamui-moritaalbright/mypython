@@ -119,6 +119,11 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
                 if(head->element.type == "indent")
                     head = head->next;
             }
+            if(head == nullptr) {
+            // Skip if head is null
+            continue;
+        }
+
             if(head->element.type == "variable"){
                 
                 if(head->next!=nullptr){
