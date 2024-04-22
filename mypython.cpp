@@ -10,6 +10,12 @@
 #include <fstream>
 using namespace std;
 //token object and its attributes
+void debugCheckNull(void* ptr, const string& message) {
+    if (ptr == nullptr) {
+        cout << "Null pointer detected: " << message << endl;
+        // You might want to handle this error condition appropriately
+    }
+}
 struct token{
     string type;
     string value;
@@ -102,12 +108,15 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
                 cu = nextNode; 
             }
             lines.push_back(top);
+        }else{
+            debugCheckNull(nullptr, "parse_saveLines - invalidSyntax");
         }
     }
 
     void parseEvaluate(){
         for(int i=0; i<lines.size(); i++){
             parse *head = lines[i];
+            debugCheckNull(head, "parseEvaluate - head");
             if(skip==true){
                 if(head->element.type == "indent")
                     continue;
@@ -203,6 +212,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
         string token;
 
         parse* cu = head;
+        debugCheckNull(cu, "computeAssignment - cu");
         while (cu != nullptr) {
             // Simplified version: You need to implement operator precedence and associativity handling here
             // This is just a placeholder to illustrate the process
@@ -270,6 +280,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
     }
 
     bool comparison(parse *head){
+        debugCheckNull(head, "comparison - head");
         string leftVal = head->element.value;
         int left;
         string logic = head->next->element.value;

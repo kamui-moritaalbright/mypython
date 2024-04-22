@@ -1,8 +1,0 @@
-a = 2
-b = 3 + 4
-c = a + b
-if a >= b
-  c = 10
-else
-  c = 15
-print("c = ",c)

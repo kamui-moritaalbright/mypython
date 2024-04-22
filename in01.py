@@ -1,16 +1,18 @@
-#variable assignments and comments
+# TestCase: if-else
 
-#comments
-a = 3
+x = 5
 
-b = 2
-#re assign
-a = 1
+resultComparison = x - 2
+z = 0
+# if-else condition
+if resultComparison > 2:
+    #5
+    resultIf = resultComparison + 2
+    if resultIf > 4:
+        z=1
+else:
+    resultIf = resultComparison - 2  
 
-#print results
-print("a =", a)
-print("b =", b)
-
-
-
-
+print("ResultComparison =", resultComparison)
+print("ResultIf =", resultIf)
+print("z =", z)

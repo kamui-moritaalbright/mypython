@@ -1,20 +1,18 @@
-# TestCase for:if-else with <=
+#Function with if/else
 
-x = 5
-y = 2
-a = x + y
+a = 10
 
-# if-else condition
-if a <= 3:
-    resA = 1
-else:
-    resA = 0 
+def evaluate(x):
+    b = x + 3
+    c = x + 7
+    d = c * b + 5
+    result = 0
+    if c > 13:
+        result = 1
+    return result
 
-resB = 5
-b = y + y
+testValue = 12
+result = evaluate(testValue)
 
-if b == 4:
-    resB = 1
+print("result =", result)
 
-print("resA =", resA)
-print("resB =", resB)

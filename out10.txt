@@ -1,3 +1,0 @@
-resA = 0
-resB = 16
-resC = 11
