@@ -585,7 +585,9 @@ vector<token> lexer(string input, int line, int index=0) {
                     tokens[i].type="function";
                 }
             }
-            
+            if(tokens[i].value=="return"){
+                tokens[i].type="return";
+            }
 
         }
     return tokens;
@@ -603,11 +605,7 @@ int main(int argc, char* argv[]){
     while(getline(inFile,line)){
         vector<token> tokens = lexer(line,lineNum);
         newParse.parser_construct(tokens);
-        int i=0;
-        while(i<tokens.size()){
-            cout<<tokens[i].value<<" "<<tokens[i].type<<endl;
-            i++;
-        }
+        
         
     }
     newParse.parser_evaluate();
