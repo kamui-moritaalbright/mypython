@@ -70,7 +70,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
             }
         }
         else if (tokens[index].type=="assignment"){
-            if(tokens[index+1].type!="other"&&tokens[index+1].type!="operand"){
+            if(tokens[index+1].type!="other"&&tokens[index+1].type!="operand"&&tokens[index+1].type!="function"){
                 cout<<"missing variable or operand after assignment "<<tokens[index].value<<endl;
                 return false;
             }else{
@@ -542,7 +542,9 @@ vector<token> lexer(string input, int line, int index=0) {
             token newtoken = {"other", currentWord, line, index};
             tokens.push_back(newtoken);
         }
-        for (int i = 0; i < tokens.size(); i++) {
+    }
+      for (int i = 0; i < tokens.size(); i++) {
+         
             if (tokens[i].type == "other") {
                 // Check if the next token is an operator
                 if (i + 1 < tokens.size() && tokens[i + 1].type == "operator") {
@@ -566,9 +568,11 @@ vector<token> lexer(string input, int line, int index=0) {
             }
             if (tokens[i].type == "other") {
                 // Check if the next token is an operator
+                if(i>=1){
                 if (tokens[i - 1].type == "operator") {
                     // Treat the current keyword as an operand
                     tokens[i].type = "operand";
+                }
                 }
             }
             if (tokens[i].type=="other"){
@@ -576,9 +580,14 @@ vector<token> lexer(string input, int line, int index=0) {
                     tokens[i].type="closingParenthesis";
                 }
             }
+            if(tokens[i].type=="other"&&tokens[i].type!="print"){
+                if(tokens[i+1].value=="("){
+                    tokens[i].type="function";
+                }
+            }
+            
 
         }
-    }
     return tokens;
 }
 
@@ -594,6 +603,11 @@ int main(int argc, char* argv[]){
     while(getline(inFile,line)){
         vector<token> tokens = lexer(line,lineNum);
         newParse.parser_construct(tokens);
+        int i=0;
+        while(i<tokens.size()){
+            cout<<tokens[i].value<<" "<<tokens[i].type<<endl;
+            i++;
+        }
         
     }
     newParse.parser_evaluate();
