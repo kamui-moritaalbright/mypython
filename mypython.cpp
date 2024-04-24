@@ -33,9 +33,13 @@ struct parse{
 class parser{
 public:
     map<string, int> variables;
+    map<string, parser*> functions;
     vector<parse*> lines;
+    vector<string> ins;
     bool error = false;
     bool skip = false;
+    int nestLevel = -1;
+    int result = 6;
   
     void parser_construct(vector<token> tokens){
         if(tokens.empty()) {
@@ -47,12 +51,16 @@ public:
         parseEvaluate();
         //print();
     }
+    int funcResult(){
+        parseEvaluate();
+        return result;
+    }
 
 private:
 
     //this goes through and verifies the expressions if theyre true or false
-//based on the grammar you establish
-bool validSyntax(const vector<token> tokens, int index = 0) {
+    //based on the grammar you establish
+    bool validSyntax(const vector<token> tokens, int index = 0) {
         // Check if the index is within bounds
         if (index >= tokens.size()) {
             cout << "Error: Unexpected end of input" << endl;
@@ -98,6 +106,7 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
 
         // Parsing succeeded
     }
+    
     void parse_saveLines(vector<token>tokens){
         if(validSyntax(tokens)){
             parse *top = new parse(tokens[0]);
@@ -118,24 +127,70 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
             parse *head = lines[i];
             debugCheckNull(head, "parseEvaluate - head");
             if(skip==true){
-                if(head->element.type == "indent")
+                parse *tmp = head;
+                int tmp_i = 0;
+                while(tmp->next!=nullptr && tmp_i < nestLevel){
+                    tmp = tmp->next;
+                    tmp_i++;
+                }
+                if(tmp_i == nestLevel && tmp->element.type == "indent"){
                     continue;
-                else if(head->element.value!="else")
+                }
+                else if(tmp_i != nestLevel){
                     skip = false;
-                
-                    
-            }else{
-                if(head->element.type == "indent")
-                    head = head->next;
+                }
+                else if(tmp->element.value != "else"){
+                    skip=false;
+                }
+            }      
+            parse *tmp2 = head;
+            int newlayer = 0;
+            while(tmp2->element.type=="indent"){
+                newlayer++;
+                tmp2 = tmp2->next;
+            }
+            nestLevel = newlayer;
+            while(head->element.type == "indent"){
+                head = head->next;
             }
             if(head == nullptr) {
             // Skip if head is null
-            continue;
-        }
+                continue;
+            }
 
             if(head->element.type == "variable"){
-                
                 if(head->next!=nullptr){
+                    parse *tmp = head;
+                    parse *tmp2 = nullptr;
+                    while(tmp!=nullptr){
+                        if(tmp->element.type == "function"){
+                            parser *cu = functions[tmp->element.value];
+                            while(tmp->element.type!="other")
+                                tmp=tmp->next;
+                            for(int i=0; i<cu->ins.size(); i++){
+                                if(tmp->element.type == "other"){
+                                    int inVar;
+                                    if(isnumber(tmp->element.type)){
+                                        inVar = stoi(tmp->element.value);
+                                    }
+                                    else{
+                                        inVar = variables[tmp->element.type];
+                                    }
+                                    cu->variables[cu->ins[i]] = inVar;
+                                }
+                                tmp = tmp->next;
+                            }
+                            tmp = tmp->next;
+                            int result = cu->funcResult();
+                            token newtoken = {"operand", to_string(result), 1, 0};
+                            parse *newIn = new parse(newtoken);
+                            tmp2->next = newIn;
+                            newIn->next = tmp;
+                            break;
+                        }
+                        tmp2 = tmp;
+                        tmp = tmp->next;
+                    }
                     if(head->next->next!=nullptr){
                         if(head->next->next->next!=nullptr){
                             variables[head->element.value] = computeAssignment(head->next->next);
@@ -167,11 +222,26 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
                     if(!comparison(head->next)){
                         skip = true;
                     }
+                    else
+                        nestLevel++;
                 }else if (head->element.value == "else"){
-                    if(skip)
+                    if(skip){
                         skip = false;
+                    }
                     else
                         skip = true;
+                }else if (head->element.value == "def"){
+                    parser *top = new parser;
+                    parser *cu = top;
+                    head = head->next;
+                    functions[head->element.value] = top;
+                    head = head->next->next;
+                    cu->ins.push_back(head->element.value);
+                    i++;
+                    while(lines[i]->element.type == "indent"){
+                        cu->lines.push_back(lines[i]->next);
+                        i++;
+                    }
                 }
 
             }else if(head->element.type == "print"){
@@ -193,6 +263,11 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
                     cu = cu->next;
                 }
                 cout << endl;
+            }else if(head->element.type == "return"){
+                if(isnumber(head->next->element.value))
+                    result = stoi(head->next->element.value);
+                else
+                    result = variables[head->next->element.value];
             }
         }
     }
@@ -353,7 +428,6 @@ bool validSyntax(const vector<token> tokens, int index = 0) {
     }
 };
 
-
 //function to see if string is a keyword, can add more keywords if needed
 bool isKeyword(const string& identifier) {
     // List of Python keywords
@@ -433,10 +507,12 @@ vector<token> lexer(string input, int line, int index=0) {
             break;
     }
     string currentWord;
+    int indentCheck = 0;
 
-    if(characters.size() > 1 && characters[0]==' '){
-        token newtoken = {"indent", " ", line, 0};
+    while(characters.size() > 1 && characters[indentCheck]==' '){
+        token newtoken = {"indent", " ", line, indentCheck};
         tokens.push_back(newtoken);
+        indentCheck+=4;
     }
 
     bool insideParenthesis = false;
@@ -581,7 +657,7 @@ vector<token> lexer(string input, int line, int index=0) {
                 }
             }
             if(tokens[i].type=="other"&&tokens[i].type!="print"){
-                if(tokens[i+1].value=="("){
+                if(i < tokens.size() && tokens[i+1].value=="("){
                     tokens[i].type="function";
                 }
             }
@@ -604,9 +680,10 @@ int main(int argc, char* argv[]){
     
     while(getline(inFile,line)){
         vector<token> tokens = lexer(line,lineNum);
+        /*for(int i=0; i<tokens.size(); i++){
+            cout << tokens[i].type << " : " << tokens[i].value << endl;
+        }*/
         newParse.parser_construct(tokens);
-        
-        
     }
     newParse.parser_evaluate();
 
