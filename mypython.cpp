@@ -428,6 +428,7 @@ private:
     }
 };
 
+
 //function to see if string is a keyword, can add more keywords if needed
 bool isKeyword(const string& identifier) {
     // List of Python keywords
@@ -509,8 +510,8 @@ vector<token> lexer(string input, int line, int index=0) {
     string currentWord;
     int indentCheck = 0;
 
-    while(characters.size() > 1 && characters[indentCheck]==' '){
-        token newtoken = {"indent", " ", line, indentCheck};
+    if(characters.size() > 1 && characters[0]==' '){
+        token newtoken = {"indent", " ", line, 0};
         tokens.push_back(newtoken);
         indentCheck+=4;
     }
@@ -519,9 +520,10 @@ vector<token> lexer(string input, int line, int index=0) {
     for (int i = 0; i < characters.size(); i++) {
         index = i;
         if (characters[i] != ' ') {
-            if (characters[i] == '(' || characters[i] == ')') {
+            if (characters[i] == '(' || characters[i] == ')'||characters[i]==',') {
                 // If currentWord is not empty, push it to tokens
                 if (!currentWord.empty()) {
+                    
                     if (isKeyword(currentWord)) {
                         token newtoken = {"keyword", currentWord, line, index};
                         tokens.push_back(newtoken);
@@ -535,10 +537,14 @@ vector<token> lexer(string input, int line, int index=0) {
                         token newtoken = {"print",currentWord,line,index};
                         tokens.push_back(newtoken);
                     } else if(currentWord=="#"){
+                        currentWord.clear();
                         break;
                     } else if (currentWord == "=") {
                         token newtoken = {"assignment", currentWord, line, index};
                         tokens.push_back(newtoken);
+                    }else if (currentWord.find('#') != string::npos) {
+                        currentWord.clear();
+                        break;
                     } else {
                         token newtoken = {"other", currentWord, line, index};
                         tokens.push_back(newtoken);
@@ -587,11 +593,29 @@ vector<token> lexer(string input, int line, int index=0) {
                     token newtoken = {"print",currentWord,line,index};
                     tokens.push_back(newtoken);
                 } else if(currentWord=="#"){
+                    currentWord.clear();
                     break;
                 } else if (currentWord == "=") {
                     token newtoken = {"assignment", currentWord, line, index};
                     tokens.push_back(newtoken);
-                } else {
+                } else if (currentWord.find('=') != string::npos) {
+                    size_t pos = currentWord.find('=');
+                    string variableName = currentWord.substr(0, pos);
+                    string assignmentOperator = "=";
+                    string value = currentWord.substr(pos + 1);
+
+                    token variableToken = {"variable", variableName, line, index};
+                    token assignmentToken = {"assignment", assignmentOperator, line, index};
+                    token valueToken = {"other", value, line, index};
+
+                    tokens.push_back(variableToken);
+                    tokens.push_back(assignmentToken);
+                    tokens.push_back(valueToken);
+                }else if (currentWord.find('#') != string::npos) {
+                    currentWord.clear();
+                    break;
+                    
+                }else {
                     token newtoken = {"other", currentWord, line, index};
                     tokens.push_back(newtoken);
                 }
@@ -614,6 +638,19 @@ vector<token> lexer(string input, int line, int index=0) {
         } else if (currentWord == "=") {
             token newtoken = {"assignment", currentWord, line, index};
             tokens.push_back(newtoken);
+        } else if (currentWord.find('=') != string::npos) {
+            size_t pos = currentWord.find('=');
+            string variableName = currentWord.substr(0, pos);
+            string assignmentOperator = "=";
+            string value = currentWord.substr(pos + 1);
+
+            token variableToken = {"variable", variableName, line, index};
+            token assignmentToken = {"assignment", assignmentOperator, line, index};
+            token valueToken = {"other", value, line, index};
+
+            tokens.push_back(variableToken);
+            tokens.push_back(assignmentToken);
+            tokens.push_back(valueToken);
         } else {
             token newtoken = {"other", currentWord, line, index};
             tokens.push_back(newtoken);
@@ -657,7 +694,7 @@ vector<token> lexer(string input, int line, int index=0) {
                 }
             }
             if(tokens[i].type=="other"&&tokens[i].type!="print"){
-                if(i < tokens.size() && tokens[i+1].value=="("){
+                if(tokens[i+1].value=="("){
                     tokens[i].type="function";
                 }
             }
@@ -680,10 +717,14 @@ int main(int argc, char* argv[]){
     
     while(getline(inFile,line)){
         vector<token> tokens = lexer(line,lineNum);
-        /*for(int i=0; i<tokens.size(); i++){
-            cout << tokens[i].type << " : " << tokens[i].value << endl;
-        }*/
         newParse.parser_construct(tokens);
+        int i=0;
+        while(i<tokens.size()){
+            cout<<tokens[i].value<<" "<<tokens[i].type<<endl;
+            i++;
+        }
+        
+        
     }
     newParse.parser_evaluate();
 

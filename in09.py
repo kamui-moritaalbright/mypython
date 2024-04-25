@@ -1,37 +1,23 @@
-#2 Functions with if/else
-
-a = 10
-b = 16
-x = 3
-y = 9
-z = 0
-c = a + 5 + b * x * y - 30
-def evaluate(x):
-    b = x * 2 
-    c = x - 4
-    d = c * b + 5
-    result = 0
-    if c > 13:
-        result = 0
-    else:
-        result = 6
-    return result
-
-def increment(x):
-    scale = 0
-    val = 3 * x + 5 + 7 + 5 - 4 * 2
-
-    if val > 45:
-        scale = 1
-    else:
-        scale = 2
-
-    x = x * scale
-    return x
+#Function calls within an expression
 
 
-z = evaluate(x)
-result = increment(y)
-print("z =", z)
-print("result =", result)
+a = 5 + 3 * 5 + 3 * 2 + 3 + 24 + 6 - 25
+b = 10 + a + a + 2 * 3 * a + a + 5 
 
+def evaluate(val):
+    z = 5 * 2 + 6 + 3 - 5 + 3 * 2
+    tmp = val + z
+    return tmp
+
+def sumInts(x,y):
+    scale = 2
+    tmp = x * scale + y
+    return tmp
+
+
+tmpA = evaluate(a) + 6
+tmpB = 14 + sumInts(a,b)
+print("a =", a)
+print("b =", b)
+print("tmpA =", tmpA)
+print("tmpB =", tmpB)

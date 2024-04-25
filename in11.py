@@ -1,14 +1,20 @@
-#Classical recursive factorial
-def f(n):
-    if n < 2: 
-        return 1
-    else:
-        return n * f(n-1)
+#Scope for function calling another function
 
+# Global variables
+a = 10
+b = 5
 
-x = f(6)
-y = f(2)
-z = f(1)
-print("x factorial =",x)
-print("y factorial =",y)
-print("z factorial =",z)
+def addSum(x):
+    z = x + 3 + a
+    x = x + b
+    result = 3 + x + x * 3 + 1 - 4 + 16
+    return result
+
+def evaluateSums(x, y):
+    c = a * 3 + x - y
+    x = c - x + 2
+    tmp = addSum(x)
+    return tmp
+
+tmp = evaluateSums(a, b)
+print("tmp =", tmp)    

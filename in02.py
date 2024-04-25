@@ -1,18 +1,16 @@
-# a = 5
-# b = 10
-# val = a * 2 + b * 5
-# c = 0
- # if-else condition
-if val < 40:
-    d = 12
-    tempA = 5 + 6 - 3 * d + 5
-    if tempA > 33:
-        c = 0
-#else:
-   # e = 13
-    #tempB = 23 + e + 5 -3
-    #if tempB < 80:
-      #  c = 1
+a = 8
+b = 3
+val = a * 2 + b - 3
 
-#print("val =", val)
-#print("c =", c)
+a = val + 1 + 3 *2
+c = 0 + b * 3 + a - a
+b = a - c + 5 + 2 + 7 + val * 2
+
+
+y = val + 2
+c = y + 5 * 3 - 16
+
+
+print("a =", a)
+print("b =", b)
+print("c =", c)
