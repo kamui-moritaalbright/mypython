@@ -39,7 +39,7 @@ public:
     bool error = false;
     bool skip = false;
     int nestLevel = -1;
-    int result = 6;
+    int result = -9999;
   
     void parser_construct(vector<token> tokens){
         if(tokens.empty()) {
@@ -165,7 +165,7 @@ private:
                 if(head->next!=nullptr){
                     parse *tmp = head;
                     parse *tmp2 = nullptr;
-                    while(tmp!=nullptr){
+                    /*while(tmp!=nullptr){
                         //cout << tmp->element.value;
                         if(tmp->element.type == "function"){
                             //cout << "function evoked: " << tmp->element.value << endl;
@@ -203,6 +203,8 @@ private:
                             }
                             tmp = tmp->next;
                             int result = cu->funcResult();
+                            int result = functionEvaluate(tmp);
+
                             token newtoken = {"operand", to_string(result), 1, 0};
                             parse *newIn = new parse(newtoken);
                             tmp2->next = newIn;
@@ -212,7 +214,7 @@ private:
                         }
                         tmp2 = tmp;
                         tmp = tmp->next;
-                    }
+                    }*/
                     //cout << endl;
                     if(head->next->next!=nullptr){
                         if(head->next->next->next!=nullptr){
@@ -261,6 +263,7 @@ private:
                     parser *cu = top;
                     cu->functions=functions;
                     cu->variables=variables;
+                    cu->ins=ins;
                     head = head->next;
                     functions[head->element.value] = top;
                     head = head->next->next;
@@ -295,15 +298,52 @@ private:
                 }
                 cout << endl;
             }else if(head->element.type == "return"){
-                if(isnumber(head->next->element.value))
+                if(head->next->next!=nullptr)
+                    result = computeAssignment(head->next);
+                else if(isnumber(head->next->element.value))
                     result = stoi(head->next->element.value);
-                else if(head->next->element.type == "function"){
-                    
-                }
                 else
                     result = variables[head->next->element.value];
             }
         }
+    }
+
+    int functionEvaluate(parse*& tmp){
+        parser *cu = functions[tmp->element.value];
+        while(tmp->element.value!="(")
+            tmp=tmp->next;
+        tmp=tmp->next;
+        for(int i=0; i<cu->ins.size(); i++){
+            string type = tmp->element.type;
+            if(type == "other" || type == "operand"){
+                int inVar;
+                if(type == "operand"){
+                    parse *tmp3 = tmp;
+                    parse *tmp4 = nullptr;
+                    while(tmp3->element.value!=")"){
+                        tmp4=tmp3;
+                        tmp3=tmp3->next;
+                    }
+                    tmp4->next = nullptr;
+                    
+                    inVar = computeAssignment(tmp);
+                    tmp4->next = tmp3;
+                    tmp = tmp4;
+                }
+                else if(isnumber(tmp->element.value)){
+                    inVar = stoi(tmp->element.value);
+                }
+                else{
+                    inVar = variables[tmp->element.value];
+                    //cout << "inVar is " << inVar << endl;
+                }
+                cu->variables[cu->ins[i]] = inVar;
+            }
+            tmp = tmp->next;
+        }
+        //tmp = tmp->next;
+        int newresult = cu->funcResult();
+        return newresult;
     }
 
     int prec(string c) {
@@ -321,11 +361,16 @@ private:
         string token;
 
         parse* cu = head;
+        parse* cu2 = nullptr;
         debugCheckNull(cu, "computeAssignment - cu");
         while (cu != nullptr) {
             // Simplified version: You need to implement operator precedence and associativity handling here
             // This is just a placeholder to illustrate the process
-            if (cu->element.type == "operand") {
+            if(cu->element.type == "function"){
+                int result = functionEvaluate(cu);
+                postfix += to_string(result) + " ";
+            }
+            else if (cu->element.type == "operand") {
                 
                 string tmp = cu->element.value;
                 if(!isnumber(tmp)){
@@ -350,7 +395,8 @@ private:
                 }
                 stack1.push(cu->element.value);
             }
-            cu = cu->next;
+            if(cu!=nullptr)
+                cu = cu->next;
         }
 
         while (!stack1.empty()) {
