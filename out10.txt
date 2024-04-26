@@ -1,0 +1,6 @@
+tmpA = 25
+tmpB = 244
+tmpC = 470
+tmpD = 129
+tmpE = 83
+tmpF = 40

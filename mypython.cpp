@@ -53,6 +53,7 @@ public:
     }
     int funcResult(){
         parseEvaluate();
+        //print();
         return result;
     }
 
@@ -125,6 +126,7 @@ private:
     void parseEvaluate(){
         for(int i=0; i<lines.size(); i++){
             parse *head = lines[i];
+
             debugCheckNull(head, "parseEvaluate - head");
             if(skip==true){
                 parse *tmp = head;
@@ -157,13 +159,16 @@ private:
             // Skip if head is null
                 continue;
             }
+            
 
             if(head->element.type == "variable"){
                 if(head->next!=nullptr){
                     parse *tmp = head;
                     parse *tmp2 = nullptr;
                     while(tmp!=nullptr){
+                        //cout << tmp->element.value;
                         if(tmp->element.type == "function"){
+                            //cout << "function evoked: " << tmp->element.value << endl;
                             parser *cu = functions[tmp->element.value];
                             while(tmp->element.type!="other")
                                 tmp=tmp->next;
@@ -174,7 +179,8 @@ private:
                                         inVar = stoi(tmp->element.value);
                                     }
                                     else{
-                                        inVar = variables[tmp->element.type];
+                                        inVar = variables[tmp->element.value];
+                                        //cout << "inVar is " << inVar << endl;
                                     }
                                     cu->variables[cu->ins[i]] = inVar;
                                 }
@@ -185,12 +191,14 @@ private:
                             token newtoken = {"operand", to_string(result), 1, 0};
                             parse *newIn = new parse(newtoken);
                             tmp2->next = newIn;
+                            //cout << "tmp is " << tmp->element.value << endl;
                             newIn->next = tmp;
                             break;
                         }
                         tmp2 = tmp;
                         tmp = tmp->next;
                     }
+                    //cout << endl;
                     if(head->next->next!=nullptr){
                         if(head->next->next->next!=nullptr){
                             variables[head->element.value] = computeAssignment(head->next->next);
@@ -219,7 +227,9 @@ private:
                 } 
             }else if(head->element.type == "keyword"){
                 if(head->element.value == "if"){
+                    //cout << "IF triggered" << endl;
                     if(!comparison(head->next)){
+                        //cout << "IF triggered" << endl;
                         skip = true;
                     }
                     else
@@ -236,11 +246,14 @@ private:
                     head = head->next;
                     functions[head->element.value] = top;
                     head = head->next->next;
-                    cu->ins.push_back(head->element.value);
-                    i++;
-                    while(lines[i]->element.type == "indent"){
-                        cu->lines.push_back(lines[i]->next);
+                    while(head!=nullptr && head->element.value!=")"){
+                        cu->ins.push_back(head->element.value);
+                        head = head->next;
+                    }
+                    //cout << "suppose "<< cu->ins[0] << " " << cu->ins[1] << endl;
+                    while(lines[i+1]!=nullptr && lines[i+1]->element.type == "indent"){
                         i++;
+                        cu->lines.push_back(lines[i]->next);
                     }
                 }
 
@@ -300,7 +313,7 @@ private:
                         tmp = to_string(declaredVal->second);
                     }
                     else{
-                        cout << "Semantic Error: Use of Undeclared Variable at line: " << cu->element.line  << endl;
+                        cout << "Semantic Error: Use of Undeclared Variable: " << tmp  << endl;
                         error = true;
                         return -9999;
                     }
@@ -424,6 +437,9 @@ private:
         for (const auto& pair : variables) {
             cout << "Key: " << pair.first << ", Value: " << pair.second << endl;
         }
+        for (const auto& pair : functions) {
+            cout << "Functions: " << pair.first << endl;
+        }
         
     }
 };
@@ -510,7 +526,7 @@ vector<token> lexer(string input, int line, int index=0) {
     string currentWord;
     int indentCheck = 0;
 
-    if(characters.size() > 1 && characters[0]==' '){
+    while(characters.size() > 1 && characters[indentCheck]==' '){
         token newtoken = {"indent", " ", line, 0};
         tokens.push_back(newtoken);
         indentCheck+=4;
@@ -713,20 +729,20 @@ int main(int argc, char* argv[]){
 	inFile.open(filename);
     vector<token> tokens;
     int lineNum = 1;
-    parser newParse;
+    parser *newParse = new parser;
     
     while(getline(inFile,line)){
         vector<token> tokens = lexer(line,lineNum);
-        newParse.parser_construct(tokens);
+        newParse->parser_construct(tokens);
         int i=0;
-        while(i<tokens.size()){
+        /*while(i<tokens.size()){
             cout<<tokens[i].value<<" "<<tokens[i].type<<endl;
             i++;
-        }
+        }*/
         
         
     }
-    newParse.parser_evaluate();
+    newParse->parser_evaluate();
 
     return 0;
 }

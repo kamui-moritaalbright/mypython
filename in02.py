@@ -2,7 +2,7 @@ a = 8
 b = 3
 val = a * 2 + b - 3
 
-a = val + 1 + 3 *2
+a = val + 1 + 3 * 2
 c = 0 + b * 3 + a - a
 b = a - c + 5 + 2 + 7 + val * 2
 

@@ -1,0 +1,3 @@
+val = 13
+tmp = 24
+tempA = 67
