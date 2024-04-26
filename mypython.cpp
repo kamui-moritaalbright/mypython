@@ -170,12 +170,27 @@ private:
                         if(tmp->element.type == "function"){
                             //cout << "function evoked: " << tmp->element.value << endl;
                             parser *cu = functions[tmp->element.value];
-                            while(tmp->element.type!="other")
+                            while(tmp->element.value!="(")
                                 tmp=tmp->next;
+                            tmp=tmp->next;
                             for(int i=0; i<cu->ins.size(); i++){
-                                if(tmp->element.type == "other"){
+                                string type = tmp->element.type;
+                                if(type == "other" || type == "operand"){
                                     int inVar;
-                                    if(isnumber(tmp->element.type)){
+                                    if(type == "operand"){
+                                        parse *tmp3 = tmp;
+                                        parse *tmp4 = nullptr;
+                                        while(tmp3->element.value!=")"){
+                                            tmp4=tmp3;
+                                            tmp3=tmp3->next;
+                                        }
+                                        tmp4->next = nullptr;
+                                        
+                                        inVar = computeAssignment(tmp);
+                                        tmp4->next = tmp3;
+                                        tmp = tmp4;
+                                    }
+                                    else if(isnumber(tmp->element.value)){
                                         inVar = stoi(tmp->element.value);
                                     }
                                     else{
@@ -201,6 +216,7 @@ private:
                     //cout << endl;
                     if(head->next->next!=nullptr){
                         if(head->next->next->next!=nullptr){
+                            //cout << "calulating for " << head->next->next->element.value << endl;
                             variables[head->element.value] = computeAssignment(head->next->next);
                         }
                         else{
@@ -243,6 +259,8 @@ private:
                 }else if (head->element.value == "def"){
                     parser *top = new parser;
                     parser *cu = top;
+                    cu->functions=functions;
+                    cu->variables=variables;
                     head = head->next;
                     functions[head->element.value] = top;
                     head = head->next->next;
@@ -279,6 +297,9 @@ private:
             }else if(head->element.type == "return"){
                 if(isnumber(head->next->element.value))
                     result = stoi(head->next->element.value);
+                else if(head->next->element.type == "function"){
+                    
+                }
                 else
                     result = variables[head->next->element.value];
             }
@@ -307,7 +328,7 @@ private:
             if (cu->element.type == "operand") {
                 
                 string tmp = cu->element.value;
-                if(!isnumber(cu->element.value)){
+                if(!isnumber(tmp)){
                     auto declaredVal = variables.find(tmp);
                     if(declaredVal!=variables.end()){
                         tmp = to_string(declaredVal->second);
@@ -832,10 +853,10 @@ int main(int argc, char* argv[]){
         vector<token> tokens = lexer(line,lineNum);
         newParse->parser_construct(tokens);
         int i=0;
-        //while(i<tokens.size()){
-            //cout<<tokens[i].value<<" "<<tokens[i].type<<endl;
-            //i++;
-        //}
+        /*while(i<tokens.size()){
+            cout<<tokens[i].value<<" "<<tokens[i].type<<endl;
+            i++;
+        }*/
         
         
     }
