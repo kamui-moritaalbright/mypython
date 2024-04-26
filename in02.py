@@ -1,3 +1,5 @@
+#Evaluate assignment and reassignment
+
 a = 8
 b = 3
 val = a * 2 + b - 3
