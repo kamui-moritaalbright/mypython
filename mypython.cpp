@@ -94,7 +94,7 @@ private:
             }
         }
         else if (tokens[index].type=="operator"){
-            if(tokens[index+1].type!="operand"){
+            if(tokens[index+1].type!="operand"&&tokens[index+1].type!="function"){
                 cout<<"missing operand token after operator "<<tokens[index].value<<endl;
                 return false;
             }else{
@@ -717,6 +717,11 @@ vector<token> lexer(string input, int line, int index=0) {
             if(tokens[i].value=="return"){
                 tokens[i].type="return";
             }
+            if(tokens[i].type=="operand"){
+                if(tokens[i+1].value=="("){
+                    tokens[i].type="function";
+                }
+            }
 
         }
     return tokens;
@@ -735,10 +740,10 @@ int main(int argc, char* argv[]){
         vector<token> tokens = lexer(line,lineNum);
         newParse->parser_construct(tokens);
         int i=0;
-        /*while(i<tokens.size()){
+        while(i<tokens.size()){
             cout<<tokens[i].value<<" "<<tokens[i].type<<endl;
             i++;
-        }*/
+        }
         
         
     }
