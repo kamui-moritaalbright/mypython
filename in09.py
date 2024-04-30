@@ -1,23 +1,21 @@
-#Function calls within an expression
+# Function calls within an expression, function in parameter
 
+num = 7 + 3 * 3 + 4 * 2 + 2 + 18 + 7 - 22
+sumVal = 8 + num + num + 2 * 2 * num + num + 6
 
-a = 5 + 3 * 5 + 3 * 2 + 3 + 24 + 6 - 25
-b = 10 + a + a + 2 * 3 * a + a + 5 
+def compute(value):
+    increment = 2 + 5 + 4 - 4 + 3 * 1
+    result = value + increment
+    return result
 
-def evaluate(val):
-    z = 5 * 2 + 6 + 3 - 5 + 3 * 2
-    tmp = val + z
-    return tmp
+def addFactors(x, y):
+    multiplier = 2
+    result = x * multiplier + y
+    return result
 
-def sumInts(x,y):
-    scale = 2
-    tmp = x * scale + y
-    return tmp
-
-
-tmpA = evaluate(a) + 6
-tmpB = 14 + sumInts(a,b)
-print("a =", a)
-print("b =", b)
-print("tmpA =", tmpA)
-print("tmpB =", tmpB)
+resultA = compute(num) + 8
+resultB = 12 + addFactors(compute(num), compute(sumVal))
+print("num =", num)
+print("sumVal =", sumVal)
+print("resultA =", resultA)
+print("resultB =", resultB)

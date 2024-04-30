@@ -860,7 +860,53 @@ vector<token> lexer(string input, int line, int index=0) {
             tokens.push_back(variableToken);
             tokens.push_back(assignmentToken);
             tokens.push_back(valueToken);
-        }else if ((currentWord.find('+') != string::npos||currentWord.find('-') != string::npos||currentWord.find('*') != string::npos||currentWord.find('/') != string::npos)&&currentWord.length()==2) {
+        }else if (currentWord.find('+') != string::npos||currentWord.find('-') != string::npos||currentWord.find('*') != string::npos||currentWord.find('/') != string::npos) {
+                    if(currentWord.find('+') != string::npos){
+                    size_t pos = currentWord.find('+');
+                    string variableName = currentWord.substr(0, pos);
+                    string assignmentOperator = "+";
+                    string value = currentWord.substr(pos + 1);
+                    token variableToken = {"operand", variableName, line, index};
+                    token assignmentToken = {"operator", assignmentOperator, line, index};
+                    token valueToken = {"operand", value, line, index};
+                    tokens.push_back(variableToken);
+                    tokens.push_back(assignmentToken);
+                    tokens.push_back(valueToken);
+                    }else if(currentWord.find('-') != string::npos){
+                    size_t pos = currentWord.find('-');
+                    string variableName = currentWord.substr(0, pos);
+                    string assignmentOperator = "-";
+                    string value = currentWord.substr(pos + 1);
+                    token variableToken = {"operand", variableName, line, index};
+                    token assignmentToken = {"operator", assignmentOperator, line, index};
+                    token valueToken = {"operand", value, line, index};
+                    tokens.push_back(variableToken);
+                    tokens.push_back(assignmentToken);
+                    tokens.push_back(valueToken);
+                    }else if(currentWord.find('*') != string::npos){
+                    size_t pos = currentWord.find('*');
+                    string variableName = currentWord.substr(0, pos);
+                    string assignmentOperator = "*";
+                    string value = currentWord.substr(pos + 1);
+                    token variableToken = {"operand", variableName, line, index};
+                    token assignmentToken = {"operator", assignmentOperator, line, index};
+                    token valueToken = {"operand", value, line, index};
+                    tokens.push_back(variableToken);
+                    tokens.push_back(assignmentToken);
+                    tokens.push_back(valueToken);
+                    }else if(currentWord.find('/') != string::npos){
+                    size_t pos = currentWord.find('/');
+                    string variableName = currentWord.substr(0, pos);
+                    string assignmentOperator = "/";
+                    string value = currentWord.substr(pos + 1);
+                    token variableToken = {"operand", variableName, line, index};
+                    token assignmentToken = {"operator", assignmentOperator, line, index};
+                    token valueToken = {"operand", value, line, index};
+                    tokens.push_back(variableToken);
+                    tokens.push_back(assignmentToken);
+                    tokens.push_back(valueToken);    
+                    }
+                }else if ((currentWord.find('+') != string::npos||currentWord.find('-') != string::npos||currentWord.find('*') != string::npos||currentWord.find('/') != string::npos)&&currentWord.length()==2) {
                     if(currentWord.find('+') != string::npos){
                     size_t pos = currentWord.find('+');
                     string variableName = currentWord.substr(pos+1);

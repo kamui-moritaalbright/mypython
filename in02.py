@@ -1,18 +1,13 @@
-#Evaluate assignment and reassignment
+# Evaluate assignment and reassignment
 
-a = 8
-b = 3
-val = a * 2 + b - 3
+x= 9
+y= 4
+z= x * 2 + 5*y
 
-a = val + 1 + 3 *2
-c = 0 + b * 3 + a - a
-b = a - c + 5 + 2 + 7 + val * 2
+x = x + y + z
+y = x*3 + y
+z = x*z
 
-
-y = val + 2
-c = y + 5 * 3 - 16
-
-
-print("a =", a)
-print("b =", b)
-print("c =", c)
+print("x =", x)
+print("y =", y)
+print("z =", z)
